@@ -1,0 +1,21 @@
+.wrapper {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+
+  &--small {
+    max-width: 800px;
+  }
+
+  &--medium {
+    max-width: 1200px;
+  }
+
+  &--large {
+    max-width: 1440px;
+  }
+
+  &--full {
+    max-width: 100%;
+  }
+}

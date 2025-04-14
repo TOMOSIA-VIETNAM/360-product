@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "name": "BMW X6",
+    "image": "/src/assets/listCar/bmw-x6.webp",
+    "imageView": "/src/assets/listCar/bmw-x6-view.webp",
+    "isElectricVehicle": false
+  },
+  {
+    "id": 2,
+    "name": "BMW M5 セダン",
+    "image": "/src/assets/listCar/bmw-m5.webp",
+    "imageView": "/src/assets/listCar/bmw-m5-view.webp",
+    "isElectricVehicle": true
+  },
+  {
+    "id": 3,
+    "name": "BMW Z4 M40i",
+    "image": "/src/assets/listCar/bmw-z4-m40.webp",
+    "imageView": "/src/assets/listCar/bmw-z4-m40-view.webp",
+    "isElectricVehicle": false
+  },
+  {
+    "id": 4,
+    "name": "BMW 4シリーズ クーペ",
+    "image": "/src/assets/listCar/bmw-4.webp",
+    "imageView": "/src/assets/listCar/bmw-4-view.webp",
+    "isElectricVehicle": false
+  },
+  {
+    "id": 5,
+    "name": "BMW M4 クーペ",
+    "image": "/src/assets/listCar/bmw-m4.webp",
+    "imageView": "/src/assets/listCar/bmw-m4-view.webp",
+    "isElectricVehicle": false
+  },
+  {
+    "id": 6,
+    "name": "BMW X1 M35i xDrive",
+    "image": "/src/assets/listCar/bmw-x1-m35i.webp",
+    "imageView": "/src/assets/listCar/bmw-x1-m35i-view.webp",
+    "isElectricVehicle": false
+  },
+  {
+    "id": 7,
+    "name": "BMW i5 M60 xDrive",
+    "image": "/src/assets/listCar/bmw-i5-m60.webp",
+    "imageView": "/src/assets/listCar/bmw-i5-m60-view.webp",
+    "isElectricVehicle": true
+  },
+  {
+    "id": 8,
+    "name": "BMW 330e セダン",
+    "image": "/src/assets/listCar/bmw-330e.webp",
+    "imageView": "/src/assets/listCar/bmw-330e-view.webp",
+    "isElectricVehicle": true
+  }
+]

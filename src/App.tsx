@@ -8,7 +8,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/customize" element={<CustomizeCarPage />} />
+        <Route path="/customize/:nameId" element={<CustomizeCarPage />} />
       </Routes>
     </Router>
   )

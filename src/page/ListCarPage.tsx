@@ -15,12 +15,14 @@ const ListCarPage = () => {
 
   const handleCustomizeClick = () => {
     if (selectedCar) {
-      navigate('/customize', { state: { car: selectedCar } });
+      navigate(`/customize/${selectedCar.nameId}`, { state: { car: selectedCar } });
     }
   }
 
   const getRowIndex = (index: number) => Math.floor(index / 4)
-  const isLastInRow = (index: number) => (index + 1) % 4 === 0
+  const isLastInRow = (index: number) => {
+    return (index + 1) % 4 === 0 || index === listCarData.length - 1;
+  }
   const selectedRowIndex = selectedCar ? getRowIndex(listCarData.findIndex(car => car.id === selectedCar.id)) : -1
 
   const renderCars = () => {
@@ -76,9 +78,9 @@ const ListCarPage = () => {
                   <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 10 }}>
                     <img src="/src/assets/icon_car.svg" alt={selectedCar.name} />
                   </div>
-                  <Button 
-                    variant="contained" 
-                    className={styles.button} 
+                  <Button
+                    variant="contained"
+                    className={styles.button}
                     sx={{ width: '100%', height: '54px', borderRadius: '0px' }}
                     onClick={handleCustomizeClick}
                   >

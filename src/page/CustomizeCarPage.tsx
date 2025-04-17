@@ -60,8 +60,8 @@ declare global {
         forceUpdate: boolean,
         hotspotConfigs: Record<string, HotspotConfig> | null
       ) => void;
-      updateDataFolder: (folder: string, activeImageX: number) => void;
       getActiveIndexByID: (id: string, orientation: string) => number | null;
+      changeFolder: (folder: string, showIndex: number) => void;
       _viewers?: CI360Viewer[];
     };
   }
@@ -72,7 +72,6 @@ const CustomizeCarPage = () => {
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
   const [selectedWheel, setSelectedWheel] = useState<Wheel | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const { nameId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -170,42 +169,25 @@ const CustomizeCarPage = () => {
     }
   }, [carData, selectedColor, selectedWheel]);
 
-  const getActiveIndex = () => {
-    const viewer = window?.CI360?._viewers?.[0];
-    if (viewer) {
-      setCurrentIndex(viewer.activeImageX - 1);
-    }
-    return null;
-  };
-  console.log(currentIndex);
   const updateDataFolder = function (folder: string) {
     const viewer = window?.CI360?._viewers?.[0];
     if (viewer) {
       const activeImageX = viewer.activeImageX;
-      console.log(viewer);
-      viewer.container.setAttribute("data-folder", folder);
       console.log(activeImageX, "activeImageX");
-      viewer.container.setAttribute(
-        "show-index",
-        (activeImageX - 1).toString()
-      );
-      window.CI360?.update(null, true, null);
-      viewer.activeImageX = activeImageX;
-      viewer.update();
+      window?.CI360?.changeFolder(folder, activeImageX);
     }
   };
 
   useEffect(() => {
     const existingViewer = window?.CI360?._viewers?.[0];
     if (existingViewer) {
-      console.log(linkFolder);
       updateDataFolder(linkFolder);
     } else {
       const loadScript = () => {
         if (!document.querySelector('script[src*="tms-360"]')) {
           const script = document.createElement("script");
           script.src =
-            "https://cdn.jsdelivr.net/npm/tms-360@1.0.3/dist/tms-360.min.js";
+            "https://cdn.jsdelivr.net/npm/tms-360@1.0.13/dist/tms-360.min.js";
           script.async = true;
           script.onload = () => {
             if (window.CI360) {
@@ -220,7 +202,7 @@ const CustomizeCarPage = () => {
 
       loadScript();
     }
-  }, [linkFolder, getActiveIndex]);
+  }, [selectedColor]);
 
   const renderHeader = () => (
     <div className={styles["header"]}>
@@ -395,7 +377,6 @@ const CustomizeCarPage = () => {
           data-drag-speed="120"
           data-full-screen="true"
           data-hide-360-logo="true"
-          show-index="5"
         ></div>
       </div>
     </div>

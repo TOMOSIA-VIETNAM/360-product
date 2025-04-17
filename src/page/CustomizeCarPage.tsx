@@ -31,10 +31,36 @@ interface Car {
   wheels: Wheel[];
 }
 
+interface CI360Viewer {
+  update: () => void;
+  destroy: () => void;
+  folder: string;
+  activeImageX: number;
+  container: HTMLElement;
+  init: (container: HTMLElement, update?: boolean) => void;
+}
+
+interface HotspotConfig {
+  position: {
+    x: number;
+    y: number;
+  };
+  content?: string;
+  title?: string;
+  id?: string;
+  className?: string;
+}
+
 declare global {
   interface Window {
     CI360?: {
       init: () => void;
+      update: (
+        id: string | null,
+        forceUpdate: boolean,
+        hotspotConfigs: Record<string, HotspotConfig> | null
+      ) => void;
+      updateDataFolder: (folder: string, activeImageX: number) => void;
       getActiveIndexByID: (id: string, orientation: string) => number | null;
       _viewers?: CI360Viewer[];
     };
@@ -46,8 +72,7 @@ const CustomizeCarPage = () => {
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
   const [selectedWheel, setSelectedWheel] = useState<Wheel | null>(null);
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
-
+  const [currentIndex, setCurrentIndex] = useState(0);
   const { nameId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -84,21 +109,8 @@ const CustomizeCarPage = () => {
     (color: Color) => {
       setSelectedColor(color);
       updateUrlParams("color", color.name.toString());
-      const viewer = window.CI360?._viewers?.[0];
-      if (viewer) {
-        // Lưu vị trí hiện
-        const currentPosition = viewer.activeImageX;
-
-        // Đặt timeout để đảm bảo cập nhật sau khi folder đã thay đổi
-        setTimeout(() => {
-          if (window.CI360?._viewers?.[0]) {
-            window.CI360._viewers[0].activeImageX = currentPosition;
-            window.CI360._viewers[0].update();
-          }
-        }, 300);
-      }
     },
-    [updateUrlParams]
+    [updateUrlParams, linkFolder]
   );
 
   const handleWheelSelect = useCallback(
@@ -154,143 +166,60 @@ const CustomizeCarPage = () => {
   useEffect(() => {
     if (carData && selectedColor && selectedWheel) {
       const folderPath = `https://tms-360-product.s3.ap-southeast-1.amazonaws.com/upload/${carData.nameId}/${selectedColor.name}/${selectedWheel.name}/`;
-
-      // Lưu vị trí hiện tại trước khi thay đổi folder
-      const currentViewer = window.CI360?._viewers?.[0];
-      const currentPosition = currentViewer?.activeImageX || 0;
-
       setLinkFolder(folderPath);
-
-      // Đặt timeout để đảm bảo cập nhật sau khi folder đã thay đổi
-      setTimeout(() => {
-        if (window.CI360?._viewers?.[0]) {
-          window.CI360._viewers[0].activeImageX = currentPosition;
-          window.CI360._viewers[0].update();
-        }
-      }, 500);
     }
   }, [carData, selectedColor, selectedWheel]);
 
-  const getActiveIndex = useCallback(() => {
-    if (window.CI360 && window.CI360.getActiveIndexByID) {
-      const activeIndex = window.CI360.getActiveIndexByID("gurkha-suv", "x");
-      setCurrentIndex(activeIndex || 0);
-      return activeIndex;
+  const getActiveIndex = () => {
+    const viewer = window?.CI360?._viewers?.[0];
+    if (viewer) {
+      setCurrentIndex(viewer.activeImageX - 1);
     }
     return null;
-  }, []);
-
-  CI360Viewer.prototype.updateDataFolder = function(folder, activeImageX) {
-    this.folder = folder;
-    this.activeImageX = activeImageX;
-
-    this.srcXConfig = {
-      folder,
-      filename: this.filenameX,
-      imageList: this.imageListX,
-      container: this.container,
-    }
-
-    const srcX = generateImagesPath(this.srcXConfig);
-
-    this.imagesX = [];
-
-    const onImageLoad = (orientation, image, index) => {
-      this.imagesX[index] = image;
-
-      const totalAmount = this.amountX;
-      const totalLoadedImages = this.imagesX.length;
-      const isFirstImageLoaded = !index;
-      const percentage = Math.round(totalLoadedImages / totalAmount * 100);
-
-      this.updatePercentageInLoader(percentage);
-      if (isFirstImageLoaded) {
-        this.onFirstImageLoaded(image);
-      } else if (this.autoplay) {
-        this.moveRight(index)
-      }
-
-      if (this.isReady()) {
-        this.update();
-      }
-    }
-
-    const loadImages = () => {
-      preloadImages(
-        this.srcXConfig,
-        srcX,
-        (onImageLoad.bind(this, ORIENTATIONS.X))
+  };
+  console.log(currentIndex);
+  const updateDataFolder = function (folder: string) {
+    const viewer = window?.CI360?._viewers?.[0];
+    if (viewer) {
+      const activeImageX = viewer.activeImageX;
+      console.log(viewer);
+      viewer.container.setAttribute("data-folder", folder);
+      console.log(activeImageX, "activeImageX");
+      viewer.container.setAttribute(
+        "show-index",
+        (activeImageX - 1).toString()
       );
-
-      if (this.allowSpinY) {
-        const srcY = generateImagesPath(this.srcYConfig);
-
-        preloadImages(
-          this.srcYConfig,
-          srcY,
-          onImageLoad.bind(this, ORIENTATIONS.Y)
-        );
-      }
+      window.CI360?.update(null, true, null);
+      viewer.activeImageX = activeImageX;
+      viewer.update();
     }
-
-    if (lazyload) {
-      const onFirstImageLoad = (image) => {
-        this.innerBox.removeChild(image);
-
-        loadImages();
-      }
-
-      initLazyload(srcX, this.srcXConfig, onFirstImageLoad);
-    } else {
-      loadImages();
-    }
-
-  }
+  };
 
   useEffect(() => {
-    const existingViewer = document.querySelector(".cloudimage-360");
+    const existingViewer = window?.CI360?._viewers?.[0];
     if (existingViewer) {
-      window.CI360?._viewers[0].updateDataFolder(linkFolder, currentIndex);
+      console.log(linkFolder);
+      updateDataFolder(linkFolder);
     } else {
       const loadScript = () => {
-        if (!document.querySelector('script[src*="js-cloudimage-360-view"]')) {
+        if (!document.querySelector('script[src*="tms-360"]')) {
           const script = document.createElement("script");
           script.src =
-            "https://cdn.scaleflex.it/plugins/js-cloudimage-360-view/latest/js-cloudimage-360-view.min.js";
+            "https://cdn.jsdelivr.net/npm/tms-360@1.0.3/dist/tms-360.min.js";
           script.async = true;
           script.onload = () => {
             if (window.CI360) {
               window.CI360.init();
-
-              const viewer = document.getElementById("gurkha-suv");
-              if (viewer) {
-                viewer.addEventListener("mouseup", getActiveIndex);
-                viewer.addEventListener("touchend", getActiveIndex);
-              }
             }
           };
           document.body.appendChild(script);
         } else if (window.CI360) {
           window.CI360.init();
-
-          const viewer = document.getElementById("gurkha-suv");
-          if (viewer) {
-            viewer.addEventListener("mouseup", getActiveIndex);
-            viewer.addEventListener("touchend", getActiveIndex);
-          }
         }
       };
 
       loadScript();
     }
-
-    return () => {
-      const viewer = document.getElementById("gurkha-suv");
-      if (viewer) {
-        viewer.removeEventListener("mouseup", getActiveIndex);
-        viewer.removeEventListener("touchend", getActiveIndex);
-      }
-    };
   }, [linkFolder, getActiveIndex]);
 
   const renderHeader = () => (
@@ -466,6 +395,7 @@ const CustomizeCarPage = () => {
           data-drag-speed="120"
           data-full-screen="true"
           data-hide-360-logo="true"
+          show-index="5"
         ></div>
       </div>
     </div>

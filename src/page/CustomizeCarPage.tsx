@@ -78,9 +78,7 @@ const CustomizeCarPage = () => {
   const carData = listCarData.find((car) => car.nameId === nameId) as
     | Car
     | undefined;
-  const [linkFolder, setLinkFolder] = useState(
-    `https://tms-360-product.s3.ap-southeast-1.amazonaws.com/upload/${carData?.nameId}/${carData?.colors[0].name}/${carData?.wheels[0].name}/`
-  );
+  const [linkFolder, setLinkFolder] = useState('');
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
@@ -147,6 +145,9 @@ const CustomizeCarPage = () => {
     setSelectedColor(initialColor);
     setSelectedWheel(initialWheel);
 
+    const initialFolderPath = `https://tms-360-product.s3.ap-southeast-1.amazonaws.com/upload/${carData.nameId}/${initialColor.name}/${initialWheel.name}/`;
+    setLinkFolder(initialFolderPath);
+
     if (!colorName || !wheelName) {
       const params = new URLSearchParams(location.search);
       if (!colorName) params.set("color", initialColor.name.toString());
@@ -170,39 +171,53 @@ const CustomizeCarPage = () => {
   }, [carData, selectedColor, selectedWheel]);
 
   const updateDataFolder = function (folder: string) {
+    console.log("updateDataFolder called with:", folder);
     const viewer = window?.CI360?._viewers?.[0];
     if (viewer) {
-      const activeImageX = viewer.activeImageX;
+      const activeImageX = viewer.activeImageX || 1; // デフォルト値を設定
       console.log(activeImageX, "activeImageX");
-      window?.CI360?.changeFolder(folder, activeImageX);
+      try {
+        window?.CI360?.changeFolder(folder, activeImageX);
+        console.log("Folder changed successfully");
+      } catch (error) {
+        console.error("Error changing folder:", error);
+      }
+    } else {
+      console.warn("No viewer found");
     }
   };
 
   useEffect(() => {
+    if (!linkFolder || linkFolder === '') return; // 空のlinkFolderでは処理しない
+
     const existingViewer = window?.CI360?._viewers?.[0];
     if (existingViewer) {
+      console.log("Updating folder to:", linkFolder);
       updateDataFolder(linkFolder);
     } else {
       const loadScript = () => {
         if (!document.querySelector('script[src*="tms-360"]')) {
+          console.log("Loading TMS-360 script");
           const script = document.createElement("script");
           script.src =
             "https://cdn.jsdelivr.net/npm/tms-360@1.0.13/dist/tms-360.min.js";
           script.async = true;
           script.onload = () => {
+            console.log("Script loaded, initializing CI360");
             if (window.CI360) {
               window.CI360.init();
             }
           };
           document.body.appendChild(script);
         } else if (window.CI360) {
+          console.log("CI360 already exists, initializing");
           window.CI360.init();
         }
       };
 
       loadScript();
     }
-  }, [selectedColor]);
+  }, [linkFolder]); // linkFolderの変更を監視
 
   const renderHeader = () => (
     <div className={styles["header"]}>

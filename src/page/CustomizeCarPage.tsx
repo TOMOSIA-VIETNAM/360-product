@@ -36,6 +36,7 @@ declare global {
     CI360?: {
       init: () => void;
       getActiveIndexByID: (id: string, orientation: string) => number | null;
+      _viewers?: CI360Viewer[];
     };
   }
 }
@@ -46,11 +47,16 @@ const CustomizeCarPage = () => {
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
   const [selectedWheel, setSelectedWheel] = useState<Wheel | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+
   const { nameId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const carData = listCarData.find((car) => car.nameId === nameId) as Car | undefined;
-  const [linkFolder, setLinkFolder] = useState(`https://tms-360-product.s3.ap-southeast-1.amazonaws.com/upload/${carData?.nameId}/${carData?.colors[0].name}/${carData?.wheels[0].name}/`);
+  const carData = listCarData.find((car) => car.nameId === nameId) as
+    | Car
+    | undefined;
+  const [linkFolder, setLinkFolder] = useState(
+    `https://tms-360-product.s3.ap-southeast-1.amazonaws.com/upload/${carData?.nameId}/${carData?.colors[0].name}/${carData?.wheels[0].name}/`
+  );
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
@@ -59,42 +65,71 @@ const CustomizeCarPage = () => {
     setRightPanelOpen(!rightPanelOpen);
   };
 
-  const updateUrlParams = useCallback((param: string, value: string) => {
-    const searchParams = new URLSearchParams(location.search);
-    searchParams.set(param, value);
-    navigate({
-      pathname: location.pathname,
-      search: searchParams.toString()
-    }, { replace: true });
-  }, [location.pathname, location.search, navigate]);
+  const updateUrlParams = useCallback(
+    (param: string, value: string) => {
+      const searchParams = new URLSearchParams(location.search);
+      searchParams.set(param, value);
+      navigate(
+        {
+          pathname: location.pathname,
+          search: searchParams.toString(),
+        },
+        { replace: true }
+      );
+    },
+    [location.pathname, location.search, navigate]
+  );
 
-  const handleColorSelect = useCallback((color: Color) => {
-    setSelectedColor(color);
-    updateUrlParams('color', color.name.toString());
-  }, [updateUrlParams]);
+  const handleColorSelect = useCallback(
+    (color: Color) => {
+      setSelectedColor(color);
+      updateUrlParams("color", color.name.toString());
+      const viewer = window.CI360?._viewers?.[0];
+      if (viewer) {
+        // Lưu vị trí hiện
+        const currentPosition = viewer.activeImageX;
 
-  const handleWheelSelect = useCallback((wheel: Wheel) => {
-    setSelectedWheel(wheel);
-    updateUrlParams('wheel', wheel.name.toString());
-  }, [updateUrlParams]);
+        // Đặt timeout để đảm bảo cập nhật sau khi folder đã thay đổi
+        setTimeout(() => {
+          if (window.CI360?._viewers?.[0]) {
+            window.CI360._viewers[0].activeImageX = currentPosition;
+            window.CI360._viewers[0].update();
+          }
+        }, 300);
+      }
+    },
+    [updateUrlParams]
+  );
+
+  const handleWheelSelect = useCallback(
+    (wheel: Wheel) => {
+      setSelectedWheel(wheel);
+      updateUrlParams("wheel", wheel.name.toString());
+    },
+    [updateUrlParams]
+  );
 
   useEffect(() => {
     if (!carData) return;
 
     const searchParams = new URLSearchParams(location.search);
-    const colorName = searchParams.get('color');
-    const wheelName = searchParams.get('wheel');
+    const colorName = searchParams.get("color");
+    const wheelName = searchParams.get("wheel");
 
     let initialColor = carData.colors[0];
     let initialWheel = carData.wheels[0];
 
     if (colorName) {
-      const foundColor = carData.colors.find(c => c.name.toString() === colorName);
+      const foundColor = carData.colors.find(
+        (c) => c.name.toString() === colorName
+      );
       if (foundColor) initialColor = foundColor;
     }
 
     if (wheelName) {
-      const foundWheel = carData.wheels.find(w => w.name.toString() === wheelName);
+      const foundWheel = carData.wheels.find(
+        (w) => w.name.toString() === wheelName
+      );
       if (foundWheel) initialWheel = foundWheel;
     }
 
@@ -103,77 +138,134 @@ const CustomizeCarPage = () => {
 
     if (!colorName || !wheelName) {
       const params = new URLSearchParams(location.search);
-      if (!colorName) params.set('color', initialColor.name.toString());
-      if (!wheelName) params.set('wheel', initialWheel.name.toString());
+      if (!colorName) params.set("color", initialColor.name.toString());
+      if (!wheelName) params.set("wheel", initialWheel.name.toString());
 
-      navigate({
-        pathname: location.pathname,
-        search: params.toString()
-      }, { replace: true });
+      navigate(
+        {
+          pathname: location.pathname,
+          search: params.toString(),
+        },
+        { replace: true }
+      );
     }
   }, [carData, location.search, navigate]);
 
   useEffect(() => {
     if (carData && selectedColor && selectedWheel) {
       const folderPath = `https://tms-360-product.s3.ap-southeast-1.amazonaws.com/upload/${carData.nameId}/${selectedColor.name}/${selectedWheel.name}/`;
+
+      // Lưu vị trí hiện tại trước khi thay đổi folder
+      const currentViewer = window.CI360?._viewers?.[0];
+      const currentPosition = currentViewer?.activeImageX || 0;
+
       setLinkFolder(folderPath);
+
+      // Đặt timeout để đảm bảo cập nhật sau khi folder đã thay đổi
+      setTimeout(() => {
+        if (window.CI360?._viewers?.[0]) {
+          window.CI360._viewers[0].activeImageX = currentPosition;
+          window.CI360._viewers[0].update();
+        }
+      }, 500);
     }
   }, [carData, selectedColor, selectedWheel]);
 
   const getActiveIndex = useCallback(() => {
     if (window.CI360 && window.CI360.getActiveIndexByID) {
-      const activeIndex = window.CI360.getActiveIndexByID('gurkha-suv', 'x');
-        setCurrentIndex(activeIndex);
+      const activeIndex = window.CI360.getActiveIndexByID("gurkha-suv", "x");
+      setCurrentIndex(activeIndex || 0);
       return activeIndex;
     }
     return null;
   }, []);
 
-  useEffect(() => {
-    const existingViewer = document.querySelector('.cloudimage-360');
-    if (existingViewer) {
-      const parent = existingViewer.parentNode;
-      if (parent) {
-        parent.removeChild(existingViewer);
+  CI360Viewer.prototype.updateDataFolder = function(folder, activeImageX) {
+    this.folder = folder;
+    this.activeImageX = activeImageX;
 
-        const newViewer = document.createElement('div');
-        newViewer.className = 'cloudimage-360';
-        newViewer.id = 'gurkha-suv';
-        newViewer.setAttribute('data-folder', linkFolder);
-        newViewer.setAttribute('data-filename-x', 'img_{index}.jpg');
-        newViewer.setAttribute('data-amount-x', '36');
-        newViewer.setAttribute('data-spin-reverse', 'true');
-        newViewer.setAttribute('data-speed', '50');
-        newViewer.setAttribute('data-drag-speed', '120');
-        newViewer.setAttribute('data-full-screen', 'true');
-        newViewer.setAttribute('data-hide-360-logo', 'true');
-        parent.appendChild(newViewer);
+    this.srcXConfig = {
+      folder,
+      filename: this.filenameX,
+      imageList: this.imageListX,
+      container: this.container,
+    }
 
-        setTimeout(() => {
-          if (window.CI360) {
-            window.CI360.init();
-            const viewer = document.getElementById('gurkha-suv');
-            if (viewer) {
-              viewer.addEventListener('mouseup', getActiveIndex);
-              viewer.addEventListener('touchend', getActiveIndex);
-            }
-          }
-        }, 100);
+    const srcX = generateImagesPath(this.srcXConfig);
+
+    this.imagesX = [];
+
+    const onImageLoad = (orientation, image, index) => {
+      this.imagesX[index] = image;
+
+      const totalAmount = this.amountX;
+      const totalLoadedImages = this.imagesX.length;
+      const isFirstImageLoaded = !index;
+      const percentage = Math.round(totalLoadedImages / totalAmount * 100);
+
+      this.updatePercentageInLoader(percentage);
+      if (isFirstImageLoaded) {
+        this.onFirstImageLoaded(image);
+      } else if (this.autoplay) {
+        this.moveRight(index)
       }
+
+      if (this.isReady()) {
+        this.update();
+      }
+    }
+
+    const loadImages = () => {
+      preloadImages(
+        this.srcXConfig,
+        srcX,
+        (onImageLoad.bind(this, ORIENTATIONS.X))
+      );
+
+      if (this.allowSpinY) {
+        const srcY = generateImagesPath(this.srcYConfig);
+
+        preloadImages(
+          this.srcYConfig,
+          srcY,
+          onImageLoad.bind(this, ORIENTATIONS.Y)
+        );
+      }
+    }
+
+    if (lazyload) {
+      const onFirstImageLoad = (image) => {
+        this.innerBox.removeChild(image);
+
+        loadImages();
+      }
+
+      initLazyload(srcX, this.srcXConfig, onFirstImageLoad);
+    } else {
+      loadImages();
+    }
+
+  }
+
+  useEffect(() => {
+    const existingViewer = document.querySelector(".cloudimage-360");
+    if (existingViewer) {
+      window.CI360?._viewers[0].updateDataFolder(linkFolder, currentIndex);
     } else {
       const loadScript = () => {
         if (!document.querySelector('script[src*="js-cloudimage-360-view"]')) {
           const script = document.createElement("script");
-          script.src = "https://cdn.scaleflex.it/plugins/js-cloudimage-360-view/latest/js-cloudimage-360-view.min.js";
+          script.src =
+            "https://cdn.scaleflex.it/plugins/js-cloudimage-360-view/latest/js-cloudimage-360-view.min.js";
           script.async = true;
           script.onload = () => {
             if (window.CI360) {
               window.CI360.init();
 
-              const viewer = document.getElementById('gurkha-suv');
+              const viewer = document.getElementById("gurkha-suv");
               if (viewer) {
-                viewer.addEventListener('mouseup', getActiveIndex);
-                viewer.addEventListener('touchend', getActiveIndex);
+                viewer.addEventListener("mouseup", getActiveIndex);
+                viewer.addEventListener("touchend", getActiveIndex);
               }
             }
           };
@@ -181,10 +273,10 @@ const CustomizeCarPage = () => {
         } else if (window.CI360) {
           window.CI360.init();
 
-          const viewer = document.getElementById('gurkha-suv');
+          const viewer = document.getElementById("gurkha-suv");
           if (viewer) {
-            viewer.addEventListener('mouseup', getActiveIndex);
-            viewer.addEventListener('touchend', getActiveIndex);
+            viewer.addEventListener("mouseup", getActiveIndex);
+            viewer.addEventListener("touchend", getActiveIndex);
           }
         }
       };
@@ -193,10 +285,10 @@ const CustomizeCarPage = () => {
     }
 
     return () => {
-      const viewer = document.getElementById('gurkha-suv');
+      const viewer = document.getElementById("gurkha-suv");
       if (viewer) {
-        viewer.removeEventListener('mouseup', getActiveIndex);
-        viewer.removeEventListener('touchend', getActiveIndex);
+        viewer.removeEventListener("mouseup", getActiveIndex);
+        viewer.removeEventListener("touchend", getActiveIndex);
       }
     };
   }, [linkFolder, getActiveIndex]);
@@ -223,12 +315,7 @@ const CustomizeCarPage = () => {
         </Box>
         <Box className={styles["header__img"]}>
           <Box className={styles["header__img__car"]}>
-            <img
-              src={carData?.image}
-              alt=""
-              width="85px"
-              height="52px"
-            />
+            <img src={carData?.image} alt="" width="85px" height="52px" />
             <Typography variant="body1" className={styles["name__car"]}>
               {carData?.name}
             </Typography>
@@ -253,16 +340,26 @@ const CustomizeCarPage = () => {
         ボディ・カラー
       </div>
       <div className={styles["main__right__container__colorCar__content"]}>
-        <div className={styles["main__right__container__colorCar__content__title"]}>
+        <div
+          className={styles["main__right__container__colorCar__content__title"]}
+        >
           メタリック
         </div>
-        <div className={styles["main__right__container__colorCar__content__color"]}>
-          <div className={styles["main__right__container__colorCar__content__color__item"]}>
+        <div
+          className={styles["main__right__container__colorCar__content__color"]}
+        >
+          <div
+            className={
+              styles["main__right__container__colorCar__content__color__item"]
+            }
+          >
             {carData?.colors.map((color) => (
               <div
                 key={color.id}
                 className={`${
-                  styles["main__right__container__colorCar__content__color__item__color"]
+                  styles[
+                    "main__right__container__colorCar__content__color__item__color"
+                  ]
                 } ${
                   selectedColor?.id === color.id ? styles["border-active"] : ""
                 }`}
@@ -296,13 +393,21 @@ const CustomizeCarPage = () => {
         アロイ・ホイール
       </div>
       <div className={styles["main__right__container__colorCar__content"]}>
-        <div className={styles["main__right__container__colorCar__content__color"]}>
-          <div className={styles["main__right__container__colorCar__content__color__item"]}>
+        <div
+          className={styles["main__right__container__colorCar__content__color"]}
+        >
+          <div
+            className={
+              styles["main__right__container__colorCar__content__color__item"]
+            }
+          >
             {carData?.wheels.map((wheel) => (
               <div
                 key={wheel.name}
                 className={`${
-                  styles["main__right__container__colorCar__content__color__item__color"]
+                  styles[
+                    "main__right__container__colorCar__content__color__item__color"
+                  ]
                 } ${
                   selectedWheel?.id === wheel.id ? styles["border-active"] : ""
                 }`}
@@ -331,7 +436,11 @@ const CustomizeCarPage = () => {
   );
 
   const renderCarViewer = () => (
-    <div className={`${styles["main__left"]} ${!rightPanelOpen ? styles["expanded"] : ""}`}>
+    <div
+      className={`${styles["main__left"]} ${
+        !rightPanelOpen ? styles["expanded"] : ""
+      }`}
+    >
       <div className={styles["toggle-button-container"]}>
         <IconButton
           onClick={toggleRightPanel}
@@ -371,15 +480,23 @@ const CustomizeCarPage = () => {
         <Box sx={{ display: "flex", gap: "0px", alignItems: "center" }}>
           <div className={styles["main__bottom__container__price"]}>
             <Box sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <Typography className={styles["main__bottom__container__price__title"]}>
+              <Typography
+                className={styles["main__bottom__container__price__title"]}
+              >
                 お支払例詳細
               </Typography>
-              <InfoOutlinedIcon sx={{ fontSize: "18px", color: "#262626", opacity: "0.8" }} />
+              <InfoOutlinedIcon
+                sx={{ fontSize: "18px", color: "#262626", opacity: "0.8" }}
+              />
             </Box>
-            <Typography className={styles["main__bottom__container__price__price"]}>
+            <Typography
+              className={styles["main__bottom__container__price__price"]}
+            >
               月々お支払例 ¥178,693
             </Typography>
-            <Typography className={styles["main__bottom__container__price_button"]}>
+            <Typography
+              className={styles["main__bottom__container__price_button"]}
+            >
               ローンシミュレーター
             </Typography>
           </div>
@@ -398,7 +515,11 @@ const CustomizeCarPage = () => {
         <div className={styles["main"]}>
           <div className={styles["main__container"]}>
             {renderCarViewer()}
-            <div className={`${styles["main__right"]} ${rightPanelOpen ? styles["open"] : styles["closed"]}`}>
+            <div
+              className={`${styles["main__right"]} ${
+                rightPanelOpen ? styles["open"] : styles["closed"]
+              }`}
+            >
               <div className={styles["main__right__container"]}>
                 {renderColorOptions()}
                 {renderWheelOptions()}

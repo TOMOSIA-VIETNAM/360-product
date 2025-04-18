@@ -125,7 +125,7 @@ const CustomizeCarPage = () => {
         console.log("Loading TMS-360 script");
         const script = document.createElement("script");
         script.src =
-          "https://cdn.jsdelivr.net/npm/tms-360@1.0.14/dist/tms-360.min.js";
+          "https://cdn.jsdelivr.net/npm/tms-360@1.0.16/dist/tms-360.min.js";
         script.async = true;
         script.onload = () => {
           console.log("Script loaded, initializing CI360");

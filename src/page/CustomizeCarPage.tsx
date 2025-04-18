@@ -31,11 +31,38 @@ interface Car {
   wheels: Wheel[];
 }
 
+interface CI360Viewer {
+  update: () => void;
+  destroy: () => void;
+  folder: string;
+  activeImageX: number;
+  container: HTMLElement;
+  init: (container: HTMLElement, update?: boolean) => void;
+}
+
+interface HotspotConfig {
+  position: {
+    x: number;
+    y: number;
+  };
+  content?: string;
+  title?: string;
+  id?: string;
+  className?: string;
+}
+
 declare global {
   interface Window {
     CI360?: {
       init: () => void;
+      update: (
+        id: string | null,
+        forceUpdate: boolean,
+        hotspotConfigs: Record<string, HotspotConfig> | null
+      ) => void;
       getActiveIndexByID: (id: string, orientation: string) => number | null;
+      changeFolder: (folder: string, showIndex: number) => void;
+      _viewers?: CI360Viewer[];
     };
   }
 }
@@ -45,12 +72,13 @@ const CustomizeCarPage = () => {
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
   const [selectedWheel, setSelectedWheel] = useState<Wheel | null>(null);
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
   const { nameId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const carData = listCarData.find((car) => car.nameId === nameId) as Car | undefined;
-  const [linkFolder, setLinkFolder] = useState(`https://tms-360-product.s3.ap-southeast-1.amazonaws.com/upload/${carData?.nameId}/${carData?.colors[0].name}/${carData?.wheels[0].name}/`);
+  const carData = listCarData.find((car) => car.nameId === nameId) as
+    | Car
+    | undefined;
+  const [linkFolder, setLinkFolder] = useState("");
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
@@ -59,57 +87,104 @@ const CustomizeCarPage = () => {
     setRightPanelOpen(!rightPanelOpen);
   };
 
-  const updateUrlParams = useCallback((param: string, value: string) => {
-    const searchParams = new URLSearchParams(location.search);
-    searchParams.set(param, value);
-    navigate({
-      pathname: location.pathname,
-      search: searchParams.toString()
-    }, { replace: true });
-  }, [location.pathname, location.search, navigate]);
+  const updateUrlParams = useCallback(
+    (param: string, value: string) => {
+      const searchParams = new URLSearchParams(location.search);
+      searchParams.set(param, value);
+      navigate(
+        {
+          pathname: location.pathname,
+          search: searchParams.toString(),
+        },
+        { replace: true }
+      );
+    },
+    [location.pathname, location.search, navigate]
+  );
 
-  const handleColorSelect = useCallback((color: Color) => {
-    setSelectedColor(color);
-    updateUrlParams('color', color.name.toString());
-  }, [updateUrlParams]);
+  const handleColorSelect = useCallback(
+    (color: Color) => {
+      setSelectedColor(color);
+      updateUrlParams("color", color.name.toString());
+    },
+    [updateUrlParams, linkFolder]
+  );
 
-  const handleWheelSelect = useCallback((wheel: Wheel) => {
-    setSelectedWheel(wheel);
-    updateUrlParams('wheel', wheel.name.toString());
-  }, [updateUrlParams]);
+  const handleWheelSelect = useCallback(
+    (wheel: Wheel) => {
+      setSelectedWheel(wheel);
+      updateUrlParams("wheel", wheel.name.toString());
+      window?.CI360?.changeFolder(linkFolder, 9);
+    },
+    [updateUrlParams]
+  );
+
+  useEffect(() => {
+    const loadScript = () => {
+      if (!document.querySelector('script[src*="tms-360"]')) {
+        console.log("Loading TMS-360 script");
+        const script = document.createElement("script");
+        script.src =
+          "https://cdn.jsdelivr.net/npm/tms-360@1.0.14/dist/tms-360.min.js";
+        script.async = true;
+        script.onload = () => {
+          console.log("Script loaded, initializing CI360");
+          if (window.CI360) {
+            window.CI360.init();
+          }
+        };
+        document.body.appendChild(script);
+      } else if (window.CI360) {
+        console.log("CI360 already exists, initializing");
+        window.CI360.init();
+      }
+    };
+
+    loadScript();
+  }, []);
 
   useEffect(() => {
     if (!carData) return;
 
     const searchParams = new URLSearchParams(location.search);
-    const colorName = searchParams.get('color');
-    const wheelName = searchParams.get('wheel');
+    const colorName = searchParams.get("color");
+    const wheelName = searchParams.get("wheel");
 
     let initialColor = carData.colors[0];
     let initialWheel = carData.wheels[0];
 
     if (colorName) {
-      const foundColor = carData.colors.find(c => c.name.toString() === colorName);
+      const foundColor = carData.colors.find(
+        (c) => c.name.toString() === colorName
+      );
       if (foundColor) initialColor = foundColor;
     }
 
     if (wheelName) {
-      const foundWheel = carData.wheels.find(w => w.name.toString() === wheelName);
+      const foundWheel = carData.wheels.find(
+        (w) => w.name.toString() === wheelName
+      );
       if (foundWheel) initialWheel = foundWheel;
     }
 
     setSelectedColor(initialColor);
     setSelectedWheel(initialWheel);
 
+    const initialFolderPath = `https://tms-360-product.s3.ap-southeast-1.amazonaws.com/upload/${carData.nameId}/${initialColor.name}/${initialWheel.name}/`;
+    setLinkFolder(initialFolderPath);
+
     if (!colorName || !wheelName) {
       const params = new URLSearchParams(location.search);
-      if (!colorName) params.set('color', initialColor.name.toString());
-      if (!wheelName) params.set('wheel', initialWheel.name.toString());
+      if (!colorName) params.set("color", initialColor.name.toString());
+      if (!wheelName) params.set("wheel", initialWheel.name.toString());
 
-      navigate({
-        pathname: location.pathname,
-        search: params.toString()
-      }, { replace: true });
+      navigate(
+        {
+          pathname: location.pathname,
+          search: params.toString(),
+        },
+        { replace: true }
+      );
     }
   }, [carData, location.search, navigate]);
 
@@ -120,86 +195,62 @@ const CustomizeCarPage = () => {
     }
   }, [carData, selectedColor, selectedWheel]);
 
-  const getActiveIndex = useCallback(() => {
-    if (window.CI360 && window.CI360.getActiveIndexByID) {
-      const activeIndex = window.CI360.getActiveIndexByID('gurkha-suv', 'x');
-        setCurrentIndex(activeIndex);
-      return activeIndex;
-    }
-    return null;
-  }, []);
-
-  useEffect(() => {
-    const existingViewer = document.querySelector('.cloudimage-360');
-    if (existingViewer) {
-      const parent = existingViewer.parentNode;
-      if (parent) {
-        parent.removeChild(existingViewer);
-
-        const newViewer = document.createElement('div');
-        newViewer.className = 'cloudimage-360';
-        newViewer.id = 'gurkha-suv';
-        newViewer.setAttribute('data-folder', linkFolder);
-        newViewer.setAttribute('data-filename-x', 'img_{index}.jpg');
-        newViewer.setAttribute('data-amount-x', '36');
-        newViewer.setAttribute('data-spin-reverse', 'true');
-        newViewer.setAttribute('data-speed', '50');
-        newViewer.setAttribute('data-drag-speed', '120');
-        newViewer.setAttribute('data-full-screen', 'true');
-        newViewer.setAttribute('data-hide-360-logo', 'true');
-        parent.appendChild(newViewer);
-
-        setTimeout(() => {
-          if (window.CI360) {
-            window.CI360.init();
-            const viewer = document.getElementById('gurkha-suv');
-            if (viewer) {
-              viewer.addEventListener('mouseup', getActiveIndex);
-              viewer.addEventListener('touchend', getActiveIndex);
-            }
-          }
-        }, 100);
+  const updateDataFolder = function (folder: string) {
+    const viewer = window?.CI360?._viewers?.[0];
+    if (viewer) {
+      const activeImageX = viewer.activeImageX === 1 ? 0 : viewer.activeImageX - 1; // デフォルト値を設定
+      try {
+        window?.CI360?.changeFolder(folder, activeImageX);
+      } catch (error) {
+        console.error("Error changing folder:", error);
       }
     } else {
+      console.warn("No viewer found");
+    }
+  };
+
+  useEffect(() => {
+    const existingViewer = window?.CI360?._viewers?.[0];
+    if (existingViewer) {
+      updateDataFolder(linkFolder);
+    } else {
       const loadScript = () => {
-        if (!document.querySelector('script[src*="js-cloudimage-360-view"]')) {
+        if (!document.querySelector('script[src*="tms-360"]')) {
+          console.log("Loading TMS-360 script");
           const script = document.createElement("script");
-          script.src = "https://cdn.scaleflex.it/plugins/js-cloudimage-360-view/latest/js-cloudimage-360-view.min.js";
+          script.src =
+            "https://cdn.jsdelivr.net/npm/tms-360@1.0.14/dist/tms-360.min.js";
           script.async = true;
           script.onload = () => {
+            console.log("Script loaded, initializing CI360");
             if (window.CI360) {
               window.CI360.init();
-
-              const viewer = document.getElementById('gurkha-suv');
-              if (viewer) {
-                viewer.addEventListener('mouseup', getActiveIndex);
-                viewer.addEventListener('touchend', getActiveIndex);
-              }
             }
           };
           document.body.appendChild(script);
         } else if (window.CI360) {
+          console.log("CI360 already exists, initializing");
           window.CI360.init();
-
-          const viewer = document.getElementById('gurkha-suv');
-          if (viewer) {
-            viewer.addEventListener('mouseup', getActiveIndex);
-            viewer.addEventListener('touchend', getActiveIndex);
-          }
         }
       };
 
       loadScript();
     }
+  }, [linkFolder]); // linkFolderの変更を監視
 
-    return () => {
-      const viewer = document.getElementById('gurkha-suv');
-      if (viewer) {
-        viewer.removeEventListener('mouseup', getActiveIndex);
-        viewer.removeEventListener('touchend', getActiveIndex);
-      }
-    };
-  }, [linkFolder, getActiveIndex]);
+  // Add a currency formatting function
+  const formatCurrency = (price: string | number): string => {
+    // Convert to number if it's a string
+    const numericPrice = typeof price === 'string' ? parseFloat(price) : price;
+
+    // Format with Japanese Yen symbol and thousand separators
+    return new Intl.NumberFormat('ja-JP', {
+      style: 'currency',
+      currency: 'JPY',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(numericPrice);
+  };
 
   const renderHeader = () => (
     <div className={styles["header"]}>
@@ -223,12 +274,7 @@ const CustomizeCarPage = () => {
         </Box>
         <Box className={styles["header__img"]}>
           <Box className={styles["header__img__car"]}>
-            <img
-              src={carData?.image}
-              alt=""
-              width="85px"
-              height="52px"
-            />
+            <img src={carData?.image} alt="" width="85px" height="52px" />
             <Typography variant="body1" className={styles["name__car"]}>
               {carData?.name}
             </Typography>
@@ -253,22 +299,40 @@ const CustomizeCarPage = () => {
         ボディ・カラー
       </div>
       <div className={styles["main__right__container__colorCar__content"]}>
-        <div className={styles["main__right__container__colorCar__content__title"]}>
+        <div
+          className={styles["main__right__container__colorCar__content__title"]}
+        >
           メタリック
         </div>
-        <div className={styles["main__right__container__colorCar__content__color"]}>
-          <div className={styles["main__right__container__colorCar__content__color__item"]}>
+        <div
+          className={styles["main__right__container__colorCar__content__color"]}
+        >
+          <div
+            className={
+              styles["main__right__container__colorCar__content__color__item"]
+            }
+          >
             {carData?.colors.map((color) => (
               <div
                 key={color.id}
                 className={`${
-                  styles["main__right__container__colorCar__content__color__item__color"]
+                  styles[
+                    "main__right__container__colorCar__content__color__item__color"
+                  ]
                 } ${
                   selectedColor?.id === color.id ? styles["border-active"] : ""
                 }`}
                 onClick={() => handleColorSelect(color)}
               >
                 <img src={color.imageColor} alt={color.name} />
+                {selectedColor?.id === color.id && (
+                  <div className={styles["color-selected-tick"]}>
+                    <svg width="24" height="24" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="8" cy="8" r="8" fill="#262626"/>
+                      <path d="M5 8L7 10L11 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -281,7 +345,7 @@ const CustomizeCarPage = () => {
                 {selectedColor.description}
               </Typography>
               <Typography className={styles["color-price"]}>
-                {selectedColor.price}
+                {formatCurrency(selectedColor.price)}
               </Typography>
             </div>
           </div>
@@ -296,19 +360,35 @@ const CustomizeCarPage = () => {
         アロイ・ホイール
       </div>
       <div className={styles["main__right__container__colorCar__content"]}>
-        <div className={styles["main__right__container__colorCar__content__color"]}>
-          <div className={styles["main__right__container__colorCar__content__color__item"]}>
+        <div
+          className={styles["main__right__container__colorCar__content__color"]}
+        >
+          <div
+            className={
+              styles["main__right__container__colorCar__content__color__item"]
+            }
+          >
             {carData?.wheels.map((wheel) => (
               <div
                 key={wheel.name}
                 className={`${
-                  styles["main__right__container__colorCar__content__color__item__color"]
+                  styles[
+                    "main__right__container__colorCar__content__color__item__color"
+                  ]
                 } ${
                   selectedWheel?.id === wheel.id ? styles["border-active"] : ""
                 }`}
                 onClick={() => handleWheelSelect(wheel)}
               >
                 <img src={wheel.imageWheel} alt="" />
+                {selectedWheel?.id === wheel.id && (
+                  <div className={styles["color-selected-tick"]}>
+                    <svg width="24" height="24" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="8" cy="8" r="8" fill="#262626"/>
+                      <path d="M5 8L7 10L11 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -321,7 +401,7 @@ const CustomizeCarPage = () => {
                 {selectedWheel.description}
               </Typography>
               <Typography className={styles["color-price"]}>
-                {selectedWheel.price}
+                {formatCurrency(selectedWheel.price)}
               </Typography>
             </div>
           </div>
@@ -331,7 +411,11 @@ const CustomizeCarPage = () => {
   );
 
   const renderCarViewer = () => (
-    <div className={`${styles["main__left"]} ${!rightPanelOpen ? styles["expanded"] : ""}`}>
+    <div
+      className={`${styles["main__left"]} ${
+        !rightPanelOpen ? styles["expanded"] : ""
+      }`}
+    >
       <div className={styles["toggle-button-container"]}>
         <IconButton
           onClick={toggleRightPanel}
@@ -346,18 +430,21 @@ const CustomizeCarPage = () => {
         </IconButton>
       </div>
       <div className={styles["image-container"]}>
-        <div
-          className="cloudimage-360"
-          id="gurkha-suv"
-          data-folder={linkFolder}
-          data-filename-x="img_{index}.jpg"
-          data-amount-x="36"
-          data-spin-reverse="true"
-          data-speed="50"
-          data-drag-speed="120"
-          data-full-screen="true"
-          data-hide-360-logo="true"
-        ></div>
+        {
+          linkFolder && (
+            <div
+              className="cloudimage-360"
+              id="gurkha-suv"
+              data-folder={linkFolder}
+              data-filename-x="img_{index}.jpg"
+              data-amount-x="36"
+              data-spin-reverse="true"
+              data-speed="50"
+              data-drag-speed="120"
+              data-full-screen="true"
+              data-hide-360-logo="true"
+          ></div>
+        )}
       </div>
     </div>
   );
@@ -371,15 +458,23 @@ const CustomizeCarPage = () => {
         <Box sx={{ display: "flex", gap: "0px", alignItems: "center" }}>
           <div className={styles["main__bottom__container__price"]}>
             <Box sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <Typography className={styles["main__bottom__container__price__title"]}>
+              <Typography
+                className={styles["main__bottom__container__price__title"]}
+              >
                 お支払例詳細
               </Typography>
-              <InfoOutlinedIcon sx={{ fontSize: "18px", color: "#262626", opacity: "0.8" }} />
+              <InfoOutlinedIcon
+                sx={{ fontSize: "18px", color: "#262626", opacity: "0.8" }}
+              />
             </Box>
-            <Typography className={styles["main__bottom__container__price__price"]}>
-              月々お支払例 ¥178,693
+            <Typography
+              className={styles["main__bottom__container__price__price"]}
+            >
+              月々お支払例 {formatCurrency(178693)}
             </Typography>
-            <Typography className={styles["main__bottom__container__price_button"]}>
+            <Typography
+              className={styles["main__bottom__container__price_button"]}
+            >
               ローンシミュレーター
             </Typography>
           </div>
@@ -398,7 +493,11 @@ const CustomizeCarPage = () => {
         <div className={styles["main"]}>
           <div className={styles["main__container"]}>
             {renderCarViewer()}
-            <div className={`${styles["main__right"]} ${rightPanelOpen ? styles["open"] : styles["closed"]}`}>
+            <div
+              className={`${styles["main__right"]} ${
+                rightPanelOpen ? styles["open"] : styles["closed"]
+              }`}
+            >
               <div className={styles["main__right__container"]}>
                 {renderColorOptions()}
                 {renderWheelOptions()}

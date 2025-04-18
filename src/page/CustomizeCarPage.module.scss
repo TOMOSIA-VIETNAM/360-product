@@ -163,6 +163,18 @@
           margin: 0 auto;
           position: relative;
           overflow: hidden;
+          transition: width 0.3s ease, height 0.3s ease;
+
+          // Media query cho màn hình lớn hơn 1240px
+          @media (min-width: 1400px) {
+            width: 1350px !important;
+            height: 690px !important;
+
+            .main__left.expanded & {
+              width: 1350px !important;
+              height: 690px !important;
+            }
+          }
 
           // Styling for the images inside the 360 viewer
           img {
@@ -171,11 +183,6 @@
             object-fit: contain;
           }
         }
-
-      }
-
-      &.expanded .image-container {
-        transform: scale(1.15);
       }
     }
 
@@ -227,6 +234,7 @@
                 gap: 30px;
                 flex-wrap: wrap;
                 .main__right__container__colorCar__content__color__item__color {
+                  position: relative;
                   img {
                     width: 72px;
                     height: 72px;
@@ -234,12 +242,13 @@
                     object-fit: cover;
                   }
                 }
+
                 .border-active {
                   border-radius: 50%;
                   border: 1px solid #262626;
                   width: 72px;
                   height: 72px;
-                  padding: 2px;
+                  padding: 1px;
                 }
               }
             }
@@ -322,4 +331,12 @@
     transform: translateX(0);
     opacity: 1;
   }
+}
+
+.color-selected-tick {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  z-index: 2;
+  pointer-events: none;
 }

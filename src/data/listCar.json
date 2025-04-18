@@ -194,8 +194,8 @@
     "colors": [
       {
         "id": 1,
-        "name": "sky_scraper_grey",
-        "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/sky_scraper_grey.jpeg",
+        "name": "alpine_white",
+        "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/alpine_white.jpeg",
         "price": 0,
         "description": "スカイスクレイパー・グレー（メタリック）"
       },
@@ -233,13 +233,6 @@
         "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/portimao_blue.jpeg",
         "price": 0,
         "description": "M ポルティマオ・ブルー（メタリック）"
-      },
-      {
-        "id": 7,
-        "name": "alpine_white",
-        "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/alpine_white.jpeg",
-        "price": 0,
-        "description": "アルピン・ホワイト"
       }
     ],
     "wheels": [
@@ -297,48 +290,34 @@
       },
       {
         "id": 5,
-        "name": "race_blue",
-        "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/race_blue.jpeg",
-        "price": 0,
-        "description": "レース・ブルー（メタリック）"
-      },
-      {
-        "id": 6,
         "name": "black_sapphire",
         "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/black_sapphire.jpeg",
         "price": 0,
         "description": "ブラック・サファイア（メタリック）"
       },
       {
-        "id": 7,
+        "id": 6,
         "name": "portimao_blue",
         "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/portimao_blue.jpeg",
         "price": 0,
         "description": "M ポルティマオ・ブルー（メタリック）"
       },
       {
-        "id": 8,
+        "id": 7,
         "name": "tanzanite_blue",
         "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/tanzanite_blue.jpeg",
         "price": 0,
         "description": "BMW Individual タンザナイト・ブルー（メタリック）"
       },
       {
-        "id": 9,
+        "id": 8,
         "name": "dravidite_grey",
         "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/dravidite_grey.jpeg",
         "price": 0,
         "description": "BMW Individual ドラバイト・グレー（メタリック）"
       },
       {
-        "id": 10,
-        "name": "frozen_tanzanite_blue",
-        "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/frozen_tanzanite_blue.jpeg",
-        "price": 0,
-        "description": "BMW Individual フローズン・タンザナイト・ブルー（メタリック）"
-      },
-      {
-        "id": 11,
+        "id": 9,
         "name": "alpine_white",
         "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/alpine_white.jpeg",
         "price": 0,
@@ -550,55 +529,48 @@
       },
       {
         "id": 5,
-        "name": "race_blue",
-        "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/race_blue.jpeg",
-        "price": 0,
-        "description": "レース・ブルー（メタリック）"
-      },
-      {
-        "id": 6,
         "name": "black_sapphire",
         "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/black_sapphire.jpeg",
         "price": 0,
         "description": "ブラック・サファイア（メタリック）"
       },
       {
-        "id": 7,
+        "id": 6,
         "name": "portimao_blue",
         "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/portimao_blue.jpeg",
         "price": 0,
         "description": "M ポルティマオ・ブルー（メタリック）"
       },
       {
-        "id": 8,
+        "id": 7,
         "name": "tanzanite_blue",
         "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/tanzanite_blue.jpeg",
         "price": 0,
         "description": "BMW Individual タンザナイト・ブルー（メタリック）"
       },
       {
-        "id": 9,
+        "id": 8,
         "name": "dravidite_grey",
         "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/dravidite_grey.jpeg",
         "price": 0,
         "description": "BMW Individual ドラバイト・グレー（メタリック）"
       },
       {
-        "id": 10,
+        "id": 9,
         "name": "frozen_tanzanite_blue",
         "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/frozen_tanzanite_blue.jpeg",
         "price": 0,
         "description": "BMW Individual フローズン・タンザナイト・ブルー（メタリック）"
       },
       {
-        "id": 11,
+        "id": 10,
         "name": "frozen_pure_grey",
         "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/frozen_pure_grey.jpeg",
         "price": 0,
         "description": "BMW Individual フローズン・ピュア・グレー（メタリック）"
       },
       {
-        "id": 12,
+        "id": 11,
         "name": "alpine_white",
         "imageColor": "https://tms-360-product.s3.ap-southeast-1.amazonaws.com/color/alpine_white.jpeg",
         "price": 0,

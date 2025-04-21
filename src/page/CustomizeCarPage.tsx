@@ -6,7 +6,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import listCarData from '../data/listCar.json';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-
+import iconLogoBMW from "/icon_logo.svg";
 interface Color {
   id: string | number;
   name: string;
@@ -75,11 +75,13 @@ const CustomizeCarPage = () => {
   const { nameId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const carData = listCarData.find((car) => car.nameId === nameId) as
-    | Car
-    | undefined;
-
+  const [carData, setCarData] = useState<Car | null>(null);
   const [linkFolder, setLinkFolder] = useState("");
+
+  // const adjustImageUrl = useCallback((url: string | undefined): string => {
+  //   if (!url) return "";
+  //   return url.replace(/\/customize\/assets\//g, "/assets/");
+  // }, []);
 
   const toggleRightPanel = () => {
     setRightPanelOpen(!rightPanelOpen);
@@ -136,8 +138,10 @@ const CustomizeCarPage = () => {
         window.CI360.init();
       }
     };
-
     loadScript();
+    const carDataDetail = listCarData.find((car) => car.nameId === nameId);
+    setCarData(carDataDetail as unknown as Car);
+
   }, []);
 
   useEffect(() => {
@@ -273,18 +277,18 @@ const CustomizeCarPage = () => {
         </Box>
         <Box className={styles["header__img"]}>
           <Box className={styles["header__img__car"]}>
-            <img src={carData?.image} alt="" width="85px" height="52px" />
+            {/* <img src={adjustImageUrl(carData?.image)} alt={carData?.name} width="85px" height="52px" />
             <Typography variant="body1" className={styles["name__car"]}>
               {carData?.name}
-            </Typography>
+            </Typography> */}
           </Box>
           <img
-            src="assets/icon_logo.svg"
+            src={iconLogoBMW}
             alt=""
             width="65px"
             height="42px"
           />
-        </Box>s
+        </Box>
       </Box>
     </div>
   );

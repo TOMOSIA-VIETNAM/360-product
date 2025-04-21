@@ -4,15 +4,17 @@ import LocalGroceryStoreOutlinedIcon from '@mui/icons-material/LocalGroceryStore
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import ListCarPage from './ListCarPage';
+import bg_i7 from '/src/assets/bg_i7.png';
+import logo_icon_white from '/src/assets/logo_icon_white.svg';
 
 const HomePage = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <div className={styles.homePage}>
         <div className={styles['header']}>
-          <img className={styles['bg_i7']} src="/assets/bg_i7.png" alt="" />
+          <img className={styles['bg_i7']} src={bg_i7} alt="" />
           <div className={styles['logo']}>
-            <img src="/assets/logo_icon_white.svg" alt="" />
+            <img src={logo_icon_white} alt="" />
           </div>
           <div className={styles['nav']}>
             <div className={styles['nav-item']}>

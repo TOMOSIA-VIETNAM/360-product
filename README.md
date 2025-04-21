@@ -1,24 +1,23 @@
 # Car Customization Platform
 
-Một ứng dụng web cho phép người dùng tùy chỉnh và khám phá các tính năng của xe hơi.
+Ứng dụng web giúp người dùng tùy chỉnh và khám phá xe hơi.
 
-## 🚀 Tính năng
+## Tính năng
 
-- Tùy chỉnh mẫu xe
-- Xem thông số kỹ thuật
-- Khám phá các tùy chọn ngoại thất và nội thất
-- Tìm hiểu về các dịch vụ đi kèm
-- Giao diện đa ngôn ngữ (Tiếng Nhật)
+- Tùy chỉnh màu sắc, bánh xe và các chi tiết ngoại thất
+- Xem thông số kỹ thuật chi tiết của xe
+- Khám phá các tùy chọn nội thất và ngoại thất
+- Xem xe ở nhiều góc độ khác nhau
 
-## 🛠 Công nghệ sử dụng
+## Công nghệ
 
 - React
 - TypeScript
-- Material-UI (MUI)
+- Material-UI
 - SCSS Modules
 - Vite
 
-## 📦 Cài đặt
+## Cài đặt
 
 bash
 npm install

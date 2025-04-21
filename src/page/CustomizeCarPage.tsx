@@ -79,9 +79,6 @@ const CustomizeCarPage = () => {
     | Car
     | undefined;
   const [linkFolder, setLinkFolder] = useState("");
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  };
 
   const toggleRightPanel = () => {
     setRightPanelOpen(!rightPanelOpen);
@@ -116,16 +113,15 @@ const CustomizeCarPage = () => {
       updateUrlParams("wheel", wheel.name.toString());
       window?.CI360?.changeFolder(linkFolder, 9);
     },
-    [updateUrlParams]
+    [updateUrlParams, linkFolder]
   );
 
   useEffect(() => {
     const loadScript = () => {
       if (!document.querySelector('script[src*="tms-360"]')) {
-        console.log("Loading TMS-360 script");
         const script = document.createElement("script");
         script.src =
-          "https://cdn.jsdelivr.net/npm/tms-360@1.0.16/dist/tms-360.min.js";
+          "https://cdn.jsdelivr.net/npm/tms-360@1.0.18/dist/tms-360.min.js";
         script.async = true;
         script.onload = () => {
           console.log("Script loaded, initializing CI360");
@@ -198,7 +194,7 @@ const CustomizeCarPage = () => {
   const updateDataFolder = function (folder: string) {
     const viewer = window?.CI360?._viewers?.[0];
     if (viewer) {
-      const activeImageX = viewer.activeImageX === 1 ? 0 : viewer.activeImageX - 1; // デフォルト値を設定
+      const activeImageX = viewer.activeImageX === 1 ? 0 : viewer.activeImageX - 1;
       try {
         window?.CI360?.changeFolder(folder, activeImageX);
       } catch (error) {
@@ -258,7 +254,9 @@ const CustomizeCarPage = () => {
         <Box className={styles["header__title"]}>モデルを変更する</Box>
         <Tabs
           value={value}
-          onChange={handleChange}
+          onChange={(_: React.SyntheticEvent, newValue: number) => {
+            setValue(newValue);
+          }}
           aria-label="car customization tabs"
         >
           <Tab label="主要諸元" />

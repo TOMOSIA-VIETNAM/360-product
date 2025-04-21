@@ -10,9 +10,9 @@ const HomePage = () => {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <div className={styles.homePage}>
         <div className={styles['header']}>
-          <img className={styles['bg_i7']} src="/src/assets/bg_i7.png" alt="" />
+          <img className={styles['bg_i7']} src="/assets/bg_i7.png" alt="" />
           <div className={styles['logo']}>
-            <img src="/src/assets/logo_icon_white.svg" alt="" />
+            <img src="/assets/logo_icon_white.svg" alt="" />
           </div>
           <div className={styles['nav']}>
             <div className={styles['nav-item']}>

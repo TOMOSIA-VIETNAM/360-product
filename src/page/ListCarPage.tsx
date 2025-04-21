@@ -38,11 +38,11 @@ const ListCarPage = () => {
             <div style={{ display: 'flex' }}>
               <img src={car.imageView} alt={car.name} width="100%" height="200px" />
               {car.isElectricVehicle &&
-                <img className={styles.electricBadge} src="/src/assets/icon_election.svg" alt={car.name} width="55px" height="55px" />}
+                <img className={styles.electricBadge} src="/assets/icon_election.svg" alt={car.name} width="55px" height="55px" />}
             </div>
             {car.isElectricVehicle ?
-              <img className={styles.evBadge} src="/src/assets/icon_electric.png" alt={car.name} /> :
-              <img className={styles.evBadge} src="/src/assets/icon_electricI.png" alt={car.name} />
+              <img className={styles.evBadge} src="/assets/icon_electric.png" alt={car.name} /> :
+              <img className={styles.evBadge} src="/assets/icon_electricI.png" alt={car.name} />
             }
             <div className={styles.carName}>{car.name}</div>
             {car.isElectricVehicle ?
@@ -62,8 +62,8 @@ const ListCarPage = () => {
                 <div className={styles.cardItemFirst}>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     {selectedCar.isElectricVehicle ?
-                      <img className={styles.evBadge} src="/src/assets/icon_electric.png" alt={selectedCar.name} /> :
-                      <img className={styles.evBadge} src="/src/assets/icon_electricI.png" alt={selectedCar.name} />
+                      <img className={styles.evBadge} src="/assets/icon_electric.png" alt={selectedCar.name} /> :
+                      <img className={styles.evBadge} src="/assets/icon_electricI.png" alt={selectedCar.name} />
                     }
                     <div className={styles.carName} style={{ display: 'flex' }}>{selectedCar.name}</div>
                     <div className={styles.carType} style={{ display: 'flex' }}>
@@ -76,7 +76,7 @@ const ListCarPage = () => {
                 </div>
                 <div className={styles.cardItem}>
                   <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 10 }}>
-                    <img src="/src/assets/icon_car.svg" alt={selectedCar.name} />
+                    <img src="/assets/icon_car.svg" alt={selectedCar.name} />
                   </div>
                   <Button
                     variant="contained"

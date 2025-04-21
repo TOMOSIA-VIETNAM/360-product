@@ -278,7 +278,7 @@ const CustomizeCarPage = () => {
             </Typography>
           </Box>
           <img
-            src="/src/assets/icon_logo.svg"
+            src="/assets/icon_logo.svg"
             alt=""
             width="65px"
             height="42px"

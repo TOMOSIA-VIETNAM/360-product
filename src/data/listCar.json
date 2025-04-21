@@ -3,8 +3,8 @@
     "id": 1,
     "name": "BMW X6",
     "nameId": "bmw_x6",
-    "image": "./assets/listCar/bmw-x6.webp",
-    "imageView": "./assets/listCar/bmw-x6-view.webp",
+    "image": "public/assets/listCar/bmw-x6.webp",
+    "imageView": "public/assets/listCar/bmw-x6-view.webp",
     "isElectricVehicle": false,
     "colors": [
       {
@@ -113,8 +113,8 @@
     "id": 2,
     "name": "BMW M5 セダン",
     "nameId": "bmw_m5",
-    "image": "./assets/listCar/bmw-m5.webp",
-    "imageView": "./assets/listCar/bmw-m5-view.webp",
+    "image": "public/assets/listCar/bmw-m5.webp",
+    "imageView": "public/assets/listCar/bmw-m5-view.webp",
     "isElectricVehicle": true,
     "colors": [
       {
@@ -188,8 +188,8 @@
     "id": 3,
     "name": "BMW Z4 M40i",
     "nameId": "bmw_z4",
-    "image": "./assets/listCar/bmw-z4-m40.webp",
-    "imageView": "./assets/listCar/bmw-z4-m40-view.webp",
+    "image": "public/assets/listCar/bmw-z4-m40.webp",
+    "imageView": "public/assets/listCar/bmw-z4-m40-view.webp",
     "isElectricVehicle": false,
     "colors": [
       {
@@ -256,8 +256,8 @@
     "id": 4,
     "name": "BMW 4シリーズ クーペ",
     "nameId": "bmw_420i",
-    "image": "./assets/listCar/bmw-4.webp",
-    "imageView": "./assets/listCar/bmw-4-view.webp",
+    "image": "public/assets/listCar/bmw-4.webp",
+    "imageView": "public/assets/listCar/bmw-4-view.webp",
     "isElectricVehicle": false,
     "colors": [
       {
@@ -352,8 +352,8 @@
     "id": 5,
     "name": "BMW X1 M35i xDrive",
     "nameId": "bmw_x1",
-    "image": "./assets/listCar/bmw-x1-m35i.webp",
-    "imageView": "./assets/listCar/bmw-x1-m35i-view.webp",
+    "image": "public/assets/listCar/bmw-x1-m35i.webp",
+    "imageView": "public/assets/listCar/bmw-x1-m35i-view.webp",
     "isElectricVehicle": false,
     "colors": [
       {
@@ -420,8 +420,8 @@
     "id": 6,
     "name": "BMW i5 M60 xDrive",
     "nameId": "bmw_i5",
-    "image": "./assets/listCar/bmw-i5-m60.webp",
-    "imageView": "./assets/listCar/bmw-i5-m60-view.webp",
+    "image": "public/assets/listCar/bmw-i5-m60.webp",
+    "imageView": "public/assets/listCar/bmw-i5-m60-view.webp",
     "isElectricVehicle": true,
     "colors": [
       {
@@ -495,8 +495,8 @@
     "id": 7,
     "name": "BMW 330e セダン",
     "nameId": "bmw_330e",
-    "image": "./assets/listCar/bmw-330e.webp",
-    "imageView": "./assets/listCar/bmw-330e-view.webp",
+    "image": "public/assets/listCar/bmw-330e.webp",
+    "imageView": "public/assets/listCar/bmw-330e-view.webp",
     "isElectricVehicle": true,
     "colors": [
       {

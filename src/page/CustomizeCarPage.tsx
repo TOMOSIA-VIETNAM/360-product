@@ -6,7 +6,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import listCarData from '../data/listCar.json'
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import iconLogo from "/src/assets/icon_logo.svg";
+import iconLogoBMW from "/src/assets/icon_logo.svg";
 interface Color {
   id: string | number;
   name: string;
@@ -279,7 +279,7 @@ const CustomizeCarPage = () => {
             </Typography>
           </Box>
           <img
-            src={iconLogo}
+            src={iconLogoBMW}
             alt=""
             width="65px"
             height="42px"

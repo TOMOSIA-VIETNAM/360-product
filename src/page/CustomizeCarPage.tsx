@@ -87,36 +87,20 @@ const CustomizeCarPage = () => {
     setRightPanelOpen(!rightPanelOpen);
   };
 
-  const updateUrlParams = useCallback(
-    (param: string, value: string) => {
-      const searchParams = new URLSearchParams(location.search);
-      searchParams.set(param, value);
-      navigate(
-        {
-          pathname: location.pathname,
-          search: searchParams.toString(),
-        },
-        { replace: true }
-      );
-    },
-    [location.pathname, location.search, navigate]
-  );
 
   const handleColorSelect = useCallback(
     (color: Color) => {
       setSelectedColor(color);
-      updateUrlParams("color", color.name.toString());
     },
-    [updateUrlParams, linkFolder]
+    [linkFolder]
   );
 
   const handleWheelSelect = useCallback(
     (wheel: Wheel) => {
       setSelectedWheel(wheel);
-      updateUrlParams("wheel", wheel.name.toString());
       window?.CI360?.changeFolder(linkFolder, 9);
     },
-    [updateUrlParams, linkFolder]
+    [linkFolder]
   );
 
   useEffect(() => {
@@ -174,19 +158,6 @@ const CustomizeCarPage = () => {
     const initialFolderPath = `https://tms-360-product.s3.ap-southeast-1.amazonaws.com/upload/${carData.nameId}/${initialColor.name}/${initialWheel.name}/`;
     setLinkFolder(initialFolderPath);
 
-    if (!colorName || !wheelName) {
-      const params = new URLSearchParams(location.search);
-      if (!colorName) params.set("color", initialColor.name.toString());
-      if (!wheelName) params.set("wheel", initialWheel.name.toString());
-
-      navigate(
-        {
-          pathname: location.pathname,
-          search: params.toString(),
-        },
-        { replace: true }
-      );
-    }
   }, [carData, location.search, navigate]);
 
   useEffect(() => {

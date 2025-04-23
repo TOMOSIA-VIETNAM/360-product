@@ -183,6 +183,24 @@
             object-fit: contain;
           }
         }
+
+        // Thêm CSS cho cloudimage-360-modal-wrapper
+        :global(.cloudimage-360-modal-wrapper) {
+          display: flex;
+          justify-content: center;
+          flex-direction: column;
+          background-color: white;
+        }
+        :global(.cloudimage-360-images-carousel-wrapper) {
+          object-fit: fill;
+        }
+        :global(.cloudimage-360-modal-description) {
+          line-height: 1.5;
+          font-size: 14px;
+          font-weight: 500;
+          color: #262626;
+          font-family: "BMW", sans-serif;
+        }
       }
     }
 

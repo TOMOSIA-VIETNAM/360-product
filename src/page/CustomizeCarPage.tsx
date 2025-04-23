@@ -88,9 +88,14 @@ declare global {
         hotspotConfigs: Record<string, HotspotConfig> | null
       ) => void;
       getActiveIndexByID: (id: string, orientation: string) => number | null;
-      changeFolder: (folder: string, showIndex: number) => void;
+      changeFolder: (
+        folder: string,
+        showIndex: number,
+        hotspotConfigs: GurkhaHotspotConfig[] | null
+      ) => void;
       _viewers?: CI360Viewer[];
       addHotspots: (id: string, config: GurkhaHotspotConfig[]) => void;
+      removeAllHotSpot: () => void;
     };
   }
 }
@@ -106,90 +111,30 @@ const CustomizeCarPage = () => {
   const [carData, setCarData] = useState<Car | null>(null);
   const [linkFolder, setLinkFolder] = useState("");
   const isBmwZ4 = nameId === "bmw_z4";
-  // const adjustImageUrl = useCallback((url: string | undefined): string => {
-  //   if (!url) return "";
-  //   return url.replace(/\/customize\/assets\//g, "/assets/");
-  // }, [])
-
-  const removeHotspotPopupById = useCallback((popupId: string) => {
-    const popupElements = document.querySelectorAll(
-      `div[data-hotspot-popup-id="${popupId}"]`
-    );
-
-    if (popupElements.length === 0) {
-      return;
-    }
-
-    popupElements.forEach((element) => {
-      element.parentNode?.removeChild(element);
-    });
-  }, []);
-
-  const removeAllHotspotPopups = useCallback(() => {
-    const popupElements = document.querySelectorAll(
-      "div[data-hotspot-popup-id]"
-    );
-    popupElements.forEach((element) => {
-      const popupId = element.getAttribute("data-hotspot-popup-id");
-      if (popupId) {
-        removeHotspotPopupById(popupId);
-      }
-    });
-  }, [removeHotspotPopupById]);
-
-  const removeHotspotIconById = useCallback((iconId: string) => {
-    const iconElements = document.querySelectorAll(
-      `div[data-hotspot-icon-id="${iconId}"]`
-    );
-
-    if (iconElements.length === 0) {
-      return;
-    }
-
-    iconElements.forEach((element) => {
-      element.parentNode?.removeChild(element);
-    });
-  }, []);
-
-  const removeAllHotspotIcons = useCallback(() => {
-    const iconElements = document.querySelectorAll("div[data-hotspot-icon-id]");
-
-    iconElements.forEach((element) => {
-      const iconId = element.getAttribute("data-hotspot-icon-id");
-      if (iconId) {
-        removeHotspotIconById(iconId);
-      }
-    });
-  }, [removeHotspotIconById]);
-
-  const removeAllHotspots = useCallback(() => {
-    removeAllHotspotPopups();
-    removeAllHotspotIcons();
-  }, [removeAllHotspotPopups, removeAllHotspotIcons]);
 
   const GURKHA_SUV_HOTSPOTS_CONFIG: GurkhaHotspotConfig[] = [
     {
       variant: {
         images: [
           {
-            src: "https://scaleflex.cloudimg.io/v7/demo/360-assets/AIR_SNORKEL_FINAL_JPG.png?vh=88bccb",
-            alt: "air snorkel",
+            src: selectedWheel?.imageWheel ?? carData?.wheels[0].imageWheel ?? "",
+            alt: selectedWheel?.name ?? carData?.wheels[0].name ?? "",
           },
         ],
         description:
-          "The snorkel gives the Gurkha an unmatched water-wading ability and ensures ample supply of fresh air for combustion.",
+          selectedWheel?.description ?? carData?.wheels[0].description,
       },
       popupProps: { popupSelector: "air-intake-popup" },
-      initialDimensions: [1170, 662],
+      initialDimensions: [1343, 755],
       positions: [
-        { imageIndex: 6, xCoord: 527, yCoord: 430 },
-        { imageIndex: 7, xCoord: 457, yCoord: 430 },
-        { imageIndex: 8, xCoord: 407, yCoord: 430 },
-        { imageIndex: 9, xCoord: 337, yCoord: 430 },
-        { imageIndex: 10, xCoord: 301, yCoord: 430 },
-        { imageIndex: 11, xCoord: 301, yCoord: 430 },
-        { imageIndex: 12, xCoord: 281, yCoord: 430 },
-        { imageIndex: 13, xCoord: 251, yCoord: 430 },
+        { imageIndex: 6, xCoord: 607, yCoord: 500 },
+        { imageIndex: 7, xCoord: 557, yCoord: 500 },
+        { imageIndex: 8, xCoord: 507, yCoord: 500 },
+        { imageIndex: 9, xCoord: 427, yCoord: 500 },
+        { imageIndex: 10, xCoord: 357, yCoord: 500 },
+        { imageIndex: 11, xCoord: 301, yCoord: 500 },
+        { imageIndex: 12, xCoord: 301, yCoord: 500 },
+        { imageIndex: 13, xCoord: 301, yCoord: 500 },
       ],
     },
   ];
@@ -200,19 +145,19 @@ const CustomizeCarPage = () => {
 
   const handleColorSelect = useCallback(
     (color: Color) => {
-      removeAllHotspots();
+      window?.CI360?.removeAllHotSpot();
       setSelectedColor(color);
     },
-    [linkFolder, removeAllHotspots]
+    [linkFolder]
   );
 
   const handleWheelSelect = useCallback(
     (wheel: Wheel) => {
-      removeAllHotspots();
+      window?.CI360?.removeAllHotSpot();
       setSelectedWheel(wheel);
-      window?.CI360?.changeFolder(linkFolder, 9);
+      window?.CI360?.changeFolder(linkFolder, 9, null);
     },
-    [linkFolder, removeAllHotspots]
+    [linkFolder]
   );
 
   useEffect(() => {
@@ -220,7 +165,7 @@ const CustomizeCarPage = () => {
       if (!document.querySelector('script[src*="tms-360"]')) {
         const script = document.createElement("script");
         script.src =
-          "https://cdn.jsdelivr.net/npm/tms-360@1.0.18/dist/tms-360.min.js";
+          "https://cdn.jsdelivr.net/npm/tms-360@1.0.19/dist/tms-360.min.js";
         script.async = true;
         script.onload = () => {
           if (window.CI360) {
@@ -283,17 +228,12 @@ const CustomizeCarPage = () => {
   }, [carData, selectedColor, selectedWheel]);
 
   const updateDataFolder = function (folder: string) {
-    removeAllHotspots();
-
     const viewer = window?.CI360?._viewers?.[0];
     if (viewer) {
       const activeImageX =
         viewer.activeImageX === 1 ? 0 : viewer.activeImageX - 1;
       try {
-        window?.CI360?.changeFolder(folder, activeImageX);
-        if (isBmwZ4) {
-          window?.CI360?.addHotspots("gurkha-suv", GURKHA_SUV_HOTSPOTS_CONFIG);
-        }
+        window?.CI360?.changeFolder(folder, activeImageX, isBmwZ4 ? GURKHA_SUV_HOTSPOTS_CONFIG : null);
       } catch (error) {
         console.error("Error changing folder:", error);
       }
